@@ -30,11 +30,16 @@ class DashboardFragment : Fragment() {
     private var _binding: FragmentDashboardBinding? = null
 
     private lateinit var enderecoEditText: EditText
+
+    private lateinit var modeloEditText: EditText
     private lateinit var itemImageView: ImageView
     private var imageUri: Uri? = null
 
 
-    //TODO("Declare aqui as outras variaveis do tipo EditText que foram inseridas no layout")
+    // TODO("Declare aqui as outras variaveis do tipo EditText que foram inseridas no layout")
+
+    private lateinit var modeloItemEditText: EditText
+
     private lateinit var salvarButton: Button
     private lateinit var selectImageButton: Button
     private lateinit var databaseReference: DatabaseReference
@@ -67,8 +72,9 @@ class DashboardFragment : Fragment() {
         salvarButton = view.findViewById(R.id.salvarItemButton)
         selectImageButton = view.findViewById(R.id.button_select_image)
         enderecoEditText = view.findViewById(R.id.enderecoItemEditText)
-        //TODO("Capture aqui os outro campos que foram inseridos no layout. Por exemplo, ate
-        // o momento so foi capturado o endereco (EditText)")
+        modeloItemEditText = view.findViewById(R.id.modeloItemEditText)
+
+
 
         auth = FirebaseAuth.getInstance()
 
@@ -96,11 +102,14 @@ class DashboardFragment : Fragment() {
     }
 
     private fun salvarItem() {
-        //TODO("Capture aqui o conteudo que esta nos outros editTexts que foram criados")
+        // TODO("Capture aqui o conteudo que esta nos outros editTexts que foram criados")
         val endereco = enderecoEditText.text.toString().trim()
+        val modelo = modeloItemEditText.text.toString().trim()
 
-        if (endereco.isEmpty() || imageUri == null) {
-            Toast.makeText(context, "Por favor, preencha todos os campos", Toast.LENGTH_SHORT)
+
+
+        if (endereco.isEmpty() || modelo.isEmpty() ||  imageUri == null) {
+            Toast.makeText(context, "Por favor, preencha todos os campos e selecione uma imagem", Toast.LENGTH_SHORT)
                 .show()
             return
         }
@@ -117,15 +126,19 @@ class DashboardFragment : Fragment() {
             if (bytes != null) {
                 val base64Image = Base64.encodeToString(bytes, Base64.DEFAULT)
                 val endereco = enderecoEditText.text.toString().trim()
-                //TODO("Capture aqui o conteudo que esta nos outros editTexts que foram criados")
+                val modelo = modeloItemEditText.text.toString().trim()
 
-                val item = Item(endereco, base64Image)
+                // Armazenar os dados no objeto Item
+                val item = Item(
+                    endereco = endereco,
+                    modelo = modelo,
+                    base64Image = base64Image
+                )
 
                 saveItemIntoDatabase(item)
             }
         }
     }
-
 
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -139,18 +152,26 @@ class DashboardFragment : Fragment() {
     }
 
     private fun saveItemIntoDatabase(item: Item) {
-        //TODO("Altere a raiz que sera criada no seu banco de dados do realtime database.
+        // TODO("Altere a raiz que sera criada no seu banco de dados do realtime database.
         // Renomeie a raiz itens")
         databaseReference = FirebaseDatabase.getInstance().getReference("itens")
 
         // Cria uma chave unica para o novo item
         val itemId = databaseReference.push().key
         if (itemId != null) {
+            // Assumindo que você usa o ID de autenticação do usuário para aninhar os itens
             databaseReference.child(auth.uid.toString()).child(itemId).setValue(item)
                 .addOnSuccessListener {
                     Toast.makeText(context, "Item cadastrado com sucesso!", Toast.LENGTH_SHORT)
                         .show()
-                    requireActivity().supportFragmentManager.popBackStack()
+                    // Limpar campos após sucesso (Opcional, mas recomendado)
+                    enderecoEditText.text.clear()
+                    modeloItemEditText.text.clear()
+                    itemImageView.setImageDrawable(null) // Limpa a imagem
+                    imageUri = null
+
+
+
                 }.addOnFailureListener {
                     Toast.makeText(context, "Falha ao cadastrar o item", Toast.LENGTH_SHORT).show()
                 }

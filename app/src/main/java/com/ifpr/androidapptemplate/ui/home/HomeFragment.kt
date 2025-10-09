@@ -64,6 +64,7 @@ class HomeFragment : Fragment() {
 
                         val imageView = itemView.findViewById<ImageView>(R.id.item_image)
                         val enderecoView = itemView.findViewById<TextView>(R.id.item_endereco)
+                        val modeloView = itemView.findViewById<TextView>(R.id.item_modelo)
 
                         enderecoView.text = "Endereço: ${item.endereco ?: "Não informado"}"
 
