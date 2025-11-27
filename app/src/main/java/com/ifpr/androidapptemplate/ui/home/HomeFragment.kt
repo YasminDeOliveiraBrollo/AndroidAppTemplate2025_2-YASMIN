@@ -43,6 +43,7 @@ import com.ifpr.androidapptemplate.R
 import com.ifpr.androidapptemplate.baseclasses.Item
 import com.ifpr.androidapptemplate.databinding.FragmentHomeBinding
 import com.ifpr.androidapptemplate.ui.ai.AiLogicActivity
+import android.net.Uri
 
 class HomeFragment : Fragment() {
 
@@ -192,6 +193,11 @@ class HomeFragment : Fragment() {
     fun carregarItensMarketplace(container: LinearLayout) {
         val databaseRef = FirebaseDatabase.getInstance().getReference("itens")
 
+        // Coordenadas fixas da Praça da Família em Telêmaco Borba
+        val pracaDaFamiliaLat = -24.316801
+        val pracaDaFamiliaLon = -50.613387
+        val mapTitle = "Praça da Família, Telêmaco Borba - PR"
+
         databaseRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 container.removeAllViews()
@@ -204,9 +210,34 @@ class HomeFragment : Fragment() {
                             .inflate(R.layout.item_template, container, false)
 
                         val imageView = itemView.findViewById<ImageView>(R.id.item_image)
-                        val enderecoView = itemView.findViewById<TextView>(R.id.item_endereco)
 
-                        enderecoView.text = "Endereço: ${item.endereco ?: "Não informado"}"
+                        // 1. Configurar o TextView do Endereço (Restaurado)
+                        val enderecoView = itemView.findViewById<TextView>(R.id.item_endereco)
+                        // Uso do operador Elvis para garantir que não há crash se 'endereco' for nulo
+                        enderecoView?.text = "Endereço: ${item.endereco ?: "Não informado"}"
+
+
+                        // 2. Configurar o Botão Google Maps (Aponta para Coordenadas Fixas)
+                        val mapsButton = itemView.findViewById<Button>(R.id.btnGoogleMaps)
+
+                        mapsButton?.setOnClickListener {
+
+                            // URI format: "geo:latitude,longitude?q=latitude,longitude(Label)"
+                            val mapUri = "geo:$pracaDaFamiliaLat,$pracaDaFamiliaLon?q=$pracaDaFamiliaLat,$pracaDaFamiliaLon(${Uri.encode(mapTitle)})"
+
+                            val mapIntent = Intent(Intent.ACTION_VIEW, Uri.parse(mapUri))
+
+                            // Tenta abrir especificamente no Google Maps app
+                            mapIntent.setPackage("com.google.android.apps.maps")
+
+                            try {
+                                startActivity(mapIntent)
+                            } catch (e: Exception) {
+                                Toast.makeText(container.context, "Google Maps não instalado ou erro ao abrir. Tente instalar o Google Maps.", Toast.LENGTH_LONG).show()
+                            }
+                        }
+                        // Fim da lógica do botão Maps
+
 
                         if (!item.imageUrl.isNullOrEmpty()) {
                             Glide.with(container.context).load(item.imageUrl).into(imageView)
