@@ -59,11 +59,15 @@ dependencies {
     implementation(libs.play.services.auth)
     implementation(libs.firebase.firestore.ktx)
     implementation(libs.firebase.crashlytics.buildtools)
+    implementation(libs.firebase.ai)
+    implementation(libs.firebase.messaging.ktx)
+    implementation(libs.google.firebase.ai)
 
     implementation(libs.glide)
 
     implementation(libs.jetbrains.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
+    implementation(libs.play.services.location)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
